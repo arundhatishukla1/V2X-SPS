@@ -1,0 +1,47 @@
+# Step 1: Channel Sensing
+def channel_sensing():
+    sensing_duration = 1000
+    RSSI = []
+    RSRP = []
+    for subframe in range(sensing_duration):
+        for subchannel in subchannels:
+            RSSI[subchannel].append(measure_RSSI(subchannel))
+            RSRP[subchannel].append(measure_RSRP(subchannel))
+    return RSSI, RSRP
+___________________________________________________________________________________
+# Step 2: Selection of Candidate Resources
+def select_candidate_resources(RSSI, RSRP, T1, T2, PDB):
+    List_A = []
+    threshold_RSRP = initial_RSRP_threshold
+    while len(List_A) < 0.2 * total_CSSRs:
+        List_A = [resource for resource in all_resources if not is_reserved(resource) and get_RSRP(resource) < threshold_RSRP]
+        if len(List_A) < 0.2 * total_CSSRs:
+            threshold_RSRP += 3
+
+    List_B = select_best_20_percent(List_A)
+    selected_CSSR = random_choice(List_B)
+    return selected_CSSR
+__________________________________________________________________________________
+# Step 3: Resource Reservation and Periodic Transmission
+def periodic_transmission(selected_CSSR):
+    RRI = get_RRI()
+    RC = random.randint(5, 15)
+    while True:
+        transmit_packet(selected_CSSR)
+        RC -= 1
+        if RC == 0:
+            if decide_keep_resource(pKeep):
+                RC = random.randint(5, 15)
+            else:
+                selected_CSSR = select_candidate_resources(RSSI, RSRP, T1, T2, PDB)
+________________________________________________________________________________
+# Main Algorithm
+def SPS_algorithm():
+    RSSI, RSRP = channel_sensing()
+    T1, T2, PDB = get_selection_window_params()
+    selected_CSSR = select_candidate_resources(RSSI, RSRP, T1, T2, PDB)
+    periodic_transmission(selected_CSSR)
+
+# Execute the algorithm
+SPS_algorithm()
+_________________________________________________________________________________
