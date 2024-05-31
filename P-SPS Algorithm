@@ -1,0 +1,56 @@
+Algorithm: Prioritized Sensing Based Semi-Persistent Scheduling (P-SPS)
+
+Initialization:
+    Set initial_RSRP_threshold
+    Set total_CSSRs
+    Set pKeep
+    Define subchannels and other data structures
+    Set RC_LP_range = [5, 10]
+    Set RC_HP_range = [10, 15]
+    Initialize LP and HP vehicles with positions, speeds, and RC values
+_________________________________________________________________________________________
+Step 1: Channel Sensing
+    Function channel_sensing():
+        Initialize RSSI and RSRP arrays
+        For subframe in range(1000):
+            For subchannel in subchannels:
+                Measure RSSI[subchannel]
+                Measure RSRP[subchannel]
+        Return RSSI, RSRP
+________________________________________________________________________________________
+Step 2: Selection of Candidate Resources
+    Function select_candidate_resources(RSSI, RSRP, T1, T2, PDB):
+        List_A = []
+        threshold_RSRP = initial_RSRP_threshold
+        While length(List_A) < 0.2 * total_CSSRs:
+            List_A = [resource for resource in all_resources if not is_reserved(resource) and get_RSRP(resource) < threshold_RSRP]
+            If length(List_A) < 0.2 * total_CSSRs:
+                threshold_RSRP += 3
+        List_B = select_best_20_percent(List_A)
+        selected_CSSR = random_choice(List_B)
+        Return selected_CSSR
+________________________________________________________________________________________
+Step 3: Resource Reservation and Periodic Transmission
+    Function periodic_transmission(selected_CSSR):
+        Set RRI
+        Set RC = random_integer(appropriate_RC_range)
+        While True:
+            Transmit_packet(selected_CSSR)
+            Decrement RC by 1
+            If RC == 0:
+                If decide_keep_resource(pKeep):
+                    Set RC = random_integer(appropriate_RC_range)
+                Else:
+                    RSSI, RSRP = channel_sensing()
+                    T1, T2, PDB = get_selection_window_params()
+                    selected_CSSR = select_candidate_resources(RSSI, RSRP, T1, T2, PDB)
+_______________________________________________________________________________________
+Step 4: Main Algorithm
+    Function P_SPS_algorithm():
+        RSSI, RSRP = channel_sensing()
+        T1, T2, PDB = get_selection_window_params()
+        selected_CSSR = select_candidate_resources(RSSI, RSRP, T1, T2, PDB)
+        periodic_transmission(selected_CSSR)
+
+Execute the algorithm:
+    Call P_SPS_algorithm()
